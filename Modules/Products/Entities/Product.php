@@ -9,7 +9,11 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = [];
+    protected $fillable = [
+        'name',
+        'title',
+        'category'
+    ];
     
     protected static function newFactory()
     {

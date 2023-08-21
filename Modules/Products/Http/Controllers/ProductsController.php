@@ -5,16 +5,27 @@ namespace Modules\Products\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\Products\Entities\Product;
+use Modules\Products\Events\ProductCreated;
+use Modules\Products\Repositories\ProductRepository;
 
 class ProductsController extends Controller
 {
+
+    protected $repository;
+    public function __construct(ProductRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
     /**
      * Display a listing of the resource.
      * @return Renderable
      */
     public function index()
     {
-        return view('products::index');
+        $data['data'] = $this->repository->getAll();
+        return view('products::product.index', $data);
     }
 
     /**
@@ -23,7 +34,7 @@ class ProductsController extends Controller
      */
     public function create()
     {
-        return view('products::create');
+        return view('products::product.create');
     }
 
     /**
@@ -33,7 +44,9 @@ class ProductsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $res = $this->repository->create(['name' => $request->name, 'title' => $request->title, 'category' => $request->category]);
+        event(new ProductCreated($res));
+        return redirect('products');
     }
 
     /**
@@ -53,7 +66,8 @@ class ProductsController extends Controller
      */
     public function edit($id)
     {
-        return view('products::edit');
+        $data['data'] = Product::find($id);
+        return view('products::product.edit', $data);
     }
 
     /**
@@ -64,7 +78,8 @@ class ProductsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $res = $this->repository->update(['name' => $request->name, 'title' => $request->title, 'category' => $request->category], $id);
+        return redirect('products');
     }
 
     /**
@@ -73,7 +88,8 @@ class ProductsController extends Controller
      * @return Renderable
      */
     public function destroy($id)
-    {
-        //
+    {   
+        Product::destroy($id);
+        return redirect('products');
     }
 }
